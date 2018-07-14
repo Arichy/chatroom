@@ -42,7 +42,7 @@ export default Vue.extend({
   },
   data() {
     return {
-      title: "多人在线聊天室"
+      title: 'Multiplayer Online Chatroom'
     };
   },
   methods: {}
@@ -70,7 +70,8 @@ export default Vue.extend({
       .form {
         width: 400px;
         height: 200px;
-        padding: 100px;
+        // padding-top: 100px;
+        margin-top: 100px;
       }
     }
   }

@@ -12,7 +12,6 @@ axios.interceptors.request.use(
         // config.headers = {
         //     'Content-Type': 'application/x-www-form-urlencoded' //设置跨域头部
         // };
-
         return config;
     },
     err => Promise.reject(err)
