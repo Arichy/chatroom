@@ -19,7 +19,7 @@ a {
 
 html {
   height: 100%;
-  // background-color: grey;
+  min-height:100%;
 }
 body {
   min-height: 100%;
@@ -34,5 +34,15 @@ body {
 }
 .text-right {
   text-align: right;
+}
+
+// 一些简单的hr样式
+.hr-cloud {
+  border: 0;
+  height: 0; /* Firefox... */
+  box-shadow: 0 0 10px 1px black;
+}
+.hr-cloud::after{
+  content:""// 防止margin塌陷
 }
 </style>

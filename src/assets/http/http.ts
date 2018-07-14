@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { getCookie } from '@/assets/util/util';
 
 axios.defaults.timeout = 5000;
 axios.defaults.baseURL = `http://localhost:8080`;

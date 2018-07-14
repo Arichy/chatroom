@@ -9,6 +9,9 @@ import Login from './components/Index/Login.vue';
 // /showroom
 import ShwoRoom from './views/ShowRoom.vue';
 
+// /room
+import Room from './components/Room.vue';
+
 Vue.use(Router);
 
 const router = new Router({
@@ -21,11 +24,11 @@ const router = new Router({
       component: Index,
       children: [
         {
-          path: 'reg',
+          path: '/reg',
           component: Reg
         },
         {
-          path: 'login',
+          path: '/login',
           component: Login
         }
       ]

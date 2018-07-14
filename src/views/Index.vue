@@ -25,12 +25,7 @@
     </el-main>
 
     <!-- footer -->
-    <el-footer>
-      <div class="text-center">
-        <span class="foot">Made By Arichy of Wuhan University in Republic of Sichuan</span><br>
-        <span class="foot">Copyright &copy;2018</span>
-      </div>
-    </el-footer>
+    <Footer></Footer>
 
   </el-container>
 </template>
@@ -38,9 +33,13 @@
 <script lang="ts">
 import Vue from "vue";
 // @ is an alias to /src
+import Footer from '@/components/Footer.vue';
 
 export default Vue.extend({
   name: "home",
+  components:{
+    Footer
+  },
   data() {
     return {
       title: "多人在线聊天室"
@@ -55,45 +54,24 @@ export default Vue.extend({
 
   .el-header {
     .el-row {
-      // background-color: yellow;
       margin-top: 14px;
 
       h2.title{
-        // background-color: red;
         color: #555;
       }
     }
   }
 
   .el-main {
-    // background-color: green;
     min-height: 100%;
     padding-bottom: 100px;
 
     .el-row {
       .form {
-        // background-color: red;
         width: 400px;
         height: 200px;
         padding: 100px;
       }
-    }
-  }
-
-  .el-footer {
-    // color: purple;
-    // background-color: red;
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    // margin-top: -100px;
-
-    .foot {
-      color: #aaa;
-      font-size: 15px;
-    }
-    .foot:last-child{
-      font-size: 13px;
     }
   }
 }

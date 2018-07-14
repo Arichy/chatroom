@@ -15,7 +15,6 @@
 
 <script lang="ts">
 import Vue from "vue";
-import axios from "axios";
 
 export default Vue.extend({
   data() {
@@ -29,7 +28,7 @@ export default Vue.extend({
   methods: {
     async handleLogin() {
       alert("登陆");
-      const res = await axios.post(`/api/login`, {
+      const res = await this.$http.post(`/api/login`, {
         usename: this.loginForm.username,
         password: this.loginForm.password
       });
@@ -75,12 +74,16 @@ export default Vue.extend({
       });
       console.log('loginres',res);
 
+      // 登陆成功
       if(res.data.success){
-        this.$router.push("showroom");
+        // 存储用户名
+        sessionStorage.setItem('username',this.loginForm.username);
+        // 跳转至showroom页面
+        this.$router.push('showroom');
       } else {
         this.$alert('用户名或密码错误','登录失败');
       }
-      
+
     }
   },
 
