@@ -25,10 +25,12 @@ const router = new Router({
       children: [
         {
           path: '/reg',
+          name:'reg',
           component: Reg
         },
         {
           path: '/login',
+          name:'login',
           component: Login
         }
       ]
@@ -49,7 +51,12 @@ const router = new Router({
       component: Room,
       meta: {
         requireAuth: true
-      }
+      },
+      // beforeEnter(to,from,next){
+      //   console.log(to,from);
+      //   next();
+      // }
+
     }
   ]
 });

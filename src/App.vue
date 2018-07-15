@@ -4,6 +4,17 @@
   </div>
 </template>
 
+<script>
+import '@/assets/preset/preset.js';
+
+export default {
+  watch:{
+    
+  }
+}
+</script>
+
+
 <style lang="scss">
 * {
   margin: 0;
@@ -45,4 +56,16 @@ body {
 .hr-cloud::after{
   content:""// 防止margin塌陷
 }
+
+// .my-textarea {
+//   .el-textarea__inner {
+//     border-radius: 0px;
+//   }
+// }
+
+// .my-input {
+//   .el-input__inner {
+//     border-radius: 0px;
+//   }
+// }
 </style>

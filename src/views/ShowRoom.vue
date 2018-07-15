@@ -256,7 +256,6 @@ export default Vue.extend({
 
             .show-room-name {
               background-color: rgba(64, 158, 255, 0.9);
-              // border-radius: $borderRadius - 1 $borderRadius - 1 0 0;
               color: white;
             }
             .show-room-id,

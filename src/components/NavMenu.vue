@@ -11,7 +11,7 @@
                 <span>Welcome, {{username}}</span>
             </li>
             <li>
-                <el-button @click="logout" type="danger" size="mini">退出</el-button>
+                <el-button @click="logout" type="danger" size="mini">退出登陆</el-button>
             </li>
         </ul>
             
@@ -64,6 +64,7 @@ export default Vue.extend({
   $navHeight: 50px;
 
   width: 100%;
+  min-width:520px;
   height: $navHeight;
   border-radius: 5px;
   line-height: $navHeight;
