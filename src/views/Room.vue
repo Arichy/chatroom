@@ -2,19 +2,20 @@
     <el-container>
         <el-header>
             <nav-menu></nav-menu>
+            <div class="text-center show-nickname">你的昵称为:{{user.nickname}}</div>
         </el-header>
-
+      
         <el-main>
             <div class="wrapper" style="margin:auto;background:skyblue">
                 <!-- 房间信息区 -->
                 <div class="title">
                     <div class="exit-btn-wrapper">
-                        <el-button type="danger" size="mini">退出房间</el-button>
+                        <el-button type="danger" @click="exitHandler" size="mini">退出房间</el-button>
                     </div>
                     
                     <ul>
-                        <li class="show-room-id">130130</li>
-                        <li class="show-room-name">周阴婷聊天室</li>
+                        <li class="show-room-id">{{room.roomId}}</li>
+                        <li class="show-room-name">{{room.roomName}}</li>
                     </ul>
                 </div>
 
@@ -23,31 +24,38 @@
                     <!-- 聊天内容区和文字输入区 -->
                     <li>
                         <!-- 聊天内容区 -->
-                        <div class="content" @scroll="scrollHandler" ref="content">
-                            <ul class="content-ul">
-                                <li v-for="chatContent of chatContentArr" >
-                                    <div :class="{'self-content':chatContent.id==id}">
+                        <div class="content"
+                        @mousewheel="wheelHandler"
+                        @DOMMouseScroll="wheelHandler"
+                        @keydown.up.down="wheelHandler"
+                        tabindex="-1"
+                        style="outline:none"
+                        ref="content">
+                            <ul class="content-ul" >
+                                <li v-for="chatContent of chatContentArr" :key="chatContent.id">
+                                    <div :class="{'self-content':chatContent.user_id==user.id}">
                                         <div class="chat-content-info">
                                             <span>{{chatContent.name}} {{chatContent.time.toLocaleTimeString('it-IT')}}</span>
                                         </div>
                                         
                                         <!-- 聊天气泡的那个小勾 -->
-                                        <canvas ref="canvas" 
+                                        <canvas 
+                                        ref="canvas" 
                                         :data-render="false" 
-                                        :data-self="chatContent.id===id"> 
+                                        :data-self="chatContent.user_id===user.id"> 
                                         </canvas>
 
                                         <span 
                                         class="chat-content-content" 
                                         ref="chatContentContent" 
-                                        :data-self="chatContent.id===id" 
+                                        :data-self="chatContent.user_id===user.id" 
                                         >
-                                            <span>{{chatContent.msg}}</span>
+                                            <span><pre>{{chatContent.msg}}</pre></span>
                                         </span>
-                                        <!-- <canvas ref="canvas" v-if="chatContent.id===id"></canvas> -->
+                                       
                                     </div>
 
-                                    <div v-if="chatContent.id===id" class="clear"></div>
+                                    <div v-if="chatContent.user_id===user.id" class="clear"></div>
                                 </li>
                                 
                             </ul>
@@ -56,34 +64,13 @@
                         <div class="input">
                             <el-input
                             type="textarea"
-                            v-model="msg"
-                            @keydown.enter.prevent.native="send"
-                            @keydown.ctrl.enter.native="test"
+                            v-model="user.msg"
+                            @keypress.enter.prevent.native="send"
+                            @keydown.ctrl.enter.native="changeLine"
                             resize="none" 
                             class="my-textarea"
                             ref="textarea"></el-input>
-                            <!-- <my-textarea 
-                            :myStyle="{
-                                width:'500px',
-                                height:'100px',
-                                resize:'none',
-                                'border-radius':'0px'
-                            }"
-                            
-                            :model="msg"
-                            ></my-textarea> -->
-
-                            <!-- <my-textarea
-                            :css="{
-                                width:'500px',
-                                height:'100px'
-                            }"
-
-                            v-model="msg"
-
-                            :value="msg"
-                            @input= "msg = $event"
-                            ></my-textarea> -->
+                           
                         </div>
                     </li>
 
@@ -93,14 +80,18 @@
                         <div class="member-title">
                             <div class="text-center">聊天成员({{peopleNum}})</div>
                         </div>
+
                         <!-- 聊天成员列表区 -->
-                        <div class="member-list">
+                        <scroll-lock
+                        class="member-list"
+                        >
                             <ul>
-                                <li class="member-item" v-for="member of this.memberArr">
-                                    {{member.name}}
+                                <li class="member-item" v-for="member of this.memberArr" :key="member.id">
+                                    {{member.nickname}}
                                 </li>
                             </ul>
-                        </div>
+                        </scroll-lock>
+
                     </li>
                 </ul>
             </div>
@@ -118,7 +109,19 @@ import MyTextarea from "@/my-ui/MyTextarea.vue";
 
 import Motion from "@/assets/util/Motion.js";
 
+// 子元素滚动，父元素不滚动的组件
+import VueScrollLock from "vue-scroll-lock";
+
+import User from "@/assets/interface/User";
+import Msg from "@/assets/interface/Msg";
+import { userInfo } from "os";
+import { clearTimeout } from "timers";
+
+Vue.use(VueScrollLock);
+
 let self = null;
+
+let timer1, timer2;
 
 // 一些自定义样式
 let css = {
@@ -206,28 +209,50 @@ export default Vue.extend({
 
   data() {
     return {
+      room: {
+        roomId: 130,
+        roomName: "周阴婷工作室"
+      },
       chatContentArr: [], // 聊天消息数组
       memberArr: [], // 此房间里的成员数组
-      id: 1, // 当前用户id
-      msg: "" // 当前用户输入的消息
+      user: {
+        id: 1, // 当前用户id
+        nickname: "", // 当前用户昵称
+        msg: "" // 当前用户输入的消息
+      }
     };
   },
   computed: {
+    // 房间人数
     peopleNum: function() {
-      return this.chatContentArr.length;
+      return this.memberArr.length;
     }
   },
   methods: {
-    async send(e) {
+    // 生成一个msg_id
+    genId(time) {
+      // id组成为 用户id+2位年+2位月+2位日+2位时+2位分+2位秒+3位毫秒
+      // id组成为 用户id+timestamp
+      return `${this.user.id}${time.getTime()}`;
+    },
+    // 发送消息
+    async send() {
+      if (this.user.msg.length == 0) {
+        return false;
+      }
       // ---temp---
+      let i = 0;
+      let now = new Date();
       this.chatContentArr.push({
-        id: this.id,
-        name: "周阴婷",
-        msg: this.msg,
-        time: new Date()
+        id: this.genId(now), //
+        user_id: this.user.id, // 发这条msg的用户的id
+        name: this.user.nickname, // 发这条msg的用户的昵称
+        msg: this.user.msg, //消息内容
+        time: now //发消息的时间
       });
+      // ---temp---
 
-      this.msg = "";
+      this.user.msg = "";
 
       // 绘制新增的canvas
       this.$nextTick(() => {
@@ -245,19 +270,87 @@ export default Vue.extend({
         this.scrollToBottom();
       });
 
-      // ---temp---
       return false;
     },
 
-    test() {
-      console.log(`%c${this.msg}`, "background-color:red");
-      this.msg += "13";
+    // ctrl+enter换行
+    changeLine(e) {
+      e = e || event;
+      e.returnValue = false;
+
+      this.msg += "\n";
     },
 
-    scrollHandler(e) {
-      console.log(e.target.scrollTop);
+    // 退出房间
+    exitHandler() {
+      // alert(14);
+      // await "ajax";
+      // 页面跳转到showroom
+      this.$router.push("showroom");
+      // this.memberArr.shift();
     },
 
+    // 发送ajax告诉服务器该用户离开了该房间
+    async exitAjax() {
+      try {
+        return await this.$http.post("/api/exitRoom");
+      } catch (err) {
+        // 网络错误
+        throw err;
+      }
+    },
+
+    // 当鼠标移入content内部时，禁止窗口滚动
+    wheelHandler(e) {
+      e = e || event;
+
+      let content = this.$refs.content;
+
+      const scrollTop = content.scrollTop,
+        scrollHeight = content.scrollHeight,
+        height = content.clientHeight;
+      // console.log(scrollTop, scrollHeight, height);
+
+      // 当出现滚动条时才禁止body滚动
+      if (scrollHeight <= height) {
+        return;
+      }
+
+      let edgeJudge = false; //判断是否到达边界
+      let direction = "down";
+
+      // 根据鼠标滑动or键盘上下键来判断edgeJudge的条件
+
+      switch (e.type) {
+        case "mousewheel":
+          let delta = e.wheelDelta ? e.wheelDelta : -(e.detail || 0);
+          direction = delta < 0 ? "up" : "down";
+          edgeJudge =
+            (delta > 0 && scrollTop <= delta) ||
+            (delta < 0 && scrollHeight - height - scrollTop <= -1 * delta);
+          break;
+
+        case "keydown":
+          direction = e.keyCode == 38 ? "up" : "down";
+          edgeJudge =
+            (e.keyCode == 38 && scrollTop <= 3) ||
+            (e.keyCode == 40 && scrollHeight - height - scrollTop <= 3);
+          break;
+      }
+
+      if (edgeJudge) {
+        // IE浏览器下滚动会跨越边界直接影响父级滚动，因此，临界时候手动边界滚动定位
+        e.type == "mousewheel" &&
+          (content.scrollTop = direction == "down" ? 0 : scrollHeight);
+        // 向上滚 || 向下滚
+        e.preventDefault();
+        e.returnValue = false;
+
+        return false;
+      }
+    },
+
+    // content滑到最下面
     scrollToBottom() {
       let content = this.$refs.content;
       let ul = content.querySelector(".content-ul");
@@ -285,117 +378,271 @@ export default Vue.extend({
       console.log(scrollDistance);
 
       content.scrollTo(0, scrollDistance);
+    },
+
+    // 初始化本用户信息
+    initUserInfo() {
+      this.user.id = 1; //this.sessionStorage.getItem('id');
+      this.user.nickname = sessionStorage.getItem("nickname");
+      this.user.msg = "";
+    },
+
+    // 初始化本房间的聊天成员数组
+    initMemberArr() {
+      this.memberArr.push({
+        id: this.user.id,
+        nickname: this.user.nickname,
+        username: this.user.username || "Arichy"
+      });
+
+      // ajax
+    },
+
+    // 渲染content
+    renderContent() {
+      // 使用nextTick，等vue渲染完成后操作DOM
+
+      // 设置content整体背景颜色
+      this.$nextTick(() => {
+        this.$refs.content.style["background-color"] =
+          css.backgroundColor.contentBackgroundColor;
+      });
+
+      // 自定义textarea样式
+      this.$nextTick(() => {
+        let textarea = this.$refs.textarea.$refs.textarea;
+        textarea.style.width = "500px";
+        textarea.style.height = "100px";
+        console.log(this.$refs);
+      });
+
+      if (this.chatContentArr.length == 0) {
+        return;
+      }
+
+      this.$nextTick(() => {
+        // 使用canvas画对话框旁边的小勾
+        //   this.$refs.canvas.forEach(canvas => drawCheckMark(canvas));
+        // 由于画小勾的背景颜色要和对话框背景颜色一样，所以用js代替css渲染对话框背景颜色
+        //   this.$refs.chatContentContent.forEach(node =>
+        // drawChatContentContent(node)
+        //   );
+
+        //DOM节点名->处理该DOM节点的函数 映射
+        let refNode_render = new Map([
+          ["canvas", drawCheckMark],
+          ["chatContentContent", drawChatContentContent]
+        ]);
+
+        // 对于每一个节点名，调用相应的处理函数进行处理
+        for (const nodeName of refNode_render.keys()) {
+          this.$refs[nodeName].forEach(node =>
+            refNode_render.get(nodeName)(node)
+          );
+        }
+      });
+
+      this.$nextTick(() => {
+        this.scrollToBottom();
+      });
     }
   },
-  //   beforeRouteLeave(to,from,next){
-  // 用户刷新了页面
-  //   if(from.name==null){
-  //       next();
-  //   } else {// 离开此页面
-  //     alert(13);
-  //   }
-  //   }
+
+  // 进入之前判断是否是通过点击enter进入的
+  async beforeRouteEnter(to, from, next) {
+    /*console.log(to, from);
+    // ajax向服务器判断该用户是否在房间里
+    const res = await Vue.prototype.$http.get('/api/authInRoom');
+    // 在房间里，只有一种情况：通过点击Enter进去的
+    if(res.data.success){
+      next();
+    } else {//不在房间里
+      next(false);
+    }*/
+    next();
+  },
+  async beforeRouteLeave(to, from, next) {
+    next();
+  },
   beforeCreate() {
-    console.log("beforeCreate");
     self = this;
   },
 
   mounted() {
-    //---temp---
-    for (let i = 0; i < 20; i++) {
-      this.chatContentArr.push({
-        id: i,
-        name: `member${i}`,
-        msg: "今天天气不错",
-        time: new Date()
-      });
+    this.initUserInfo();
+    this.initMemberArr();
+    this.renderContent();
 
-      this.memberArr.push({
-        id: i,
-        name: `member${i}`
-      });
+    // let now = new Date;
+    // this.chatContentArr.push({
+    //   id: this.genId(now), //
+    //   user_id: this.user.id, // 发这条msg的用户的id
+    //   name: this.user.nickname, // 发这条msg的用户的昵称
+    //   msg: this.user.msg, //消息内容
+    //   time: now //发消息的时间
+    // });
+
+    class FakeUser {
+      constructor(id, username, nickname) {
+        this.id = id;
+        this.username = username;
+        this.nickname = nickname || username;
+      }
     }
 
-    this.chatContentArr.push({
-      id: this.id,
-      name: `member${this.id}`,
-      msg: "嘻嘻嘻",
-      time: new Date()
-    });
-    this.chatContentArr.push({
-      id: this.id,
-      name: `member${this.id}`,
-      msg: "嘻嘻嘻",
-      time: new Date()
-    });
-
-    ["南宁仙子周阴婷", "蔡依淋", "罗玉凤"].forEach((bitch, index) => {
-      this.chatContentArr.push({
-        id: index + 10,
-        name: bitch,
-        msg: "我素妓女",
-        time: new Date()
-      });
-
-      this.memberArr.push({
-        id: index + 10,
-        name: bitch
-      });
-    });
-    //---temp---
-
-    // 使用nextTick，在v-for将li全部渲染完成后操作canvas和chatcontentcontent
-
-    this.$nextTick(() => {
-      // 使用canvas画对话框旁边的小勾
-      //   this.$refs.canvas.forEach(canvas => drawCheckMark(canvas));
-      // 由于画小勾的背景颜色要和对话框背景颜色一样，所以用js代替css渲染对话框背景颜色
-      //   this.$refs.chatContentContent.forEach(node =>
-      // drawChatContentContent(node)
-      //   );
-
-      //DOM节点名->处理该DOM节点的函数 映射
-      let refNode_render = new Map([
-        ["canvas", drawCheckMark],
-        ["chatContentContent", drawChatContentContent]
-      ]);
-
-      // 对于每一个节点名，调用相应的处理函数进行处理
-      for (const nodeName of refNode_render.keys()) {
-        this.$refs[nodeName].forEach(node =>
-          refNode_render.get(nodeName)(node)
-        );
+    class FakeMsg {
+      constructor(id, user_id, name, msg, time) {
+        this.id = id;
+        this.user_id = user_id;
+        this.name = name;
+        this.msg = msg;
+        this.time = time;
       }
-    });
+    }
 
-    // 设置content整体背景颜色
-    this.$nextTick(() => {
-      this.$refs.content.style["background-color"] =
-        css.backgroundColor.contentBackgroundColor;
-    });
+    let _ = self._;
+    this.memberArr.push(
+      new FakeUser(0, "周阴婷"),
+      new FakeUser(2, "蔡依淋"),
+      new FakeUser(3, "罗玉凤"),
+      new FakeUser(4, "秦兴隆"),
+      new FakeUser(5, "9母"),
+      new FakeUser(6, "蕾姆"),
+      new FakeUser(7, "蔡英文")
+    );
 
-    // 自定义textarea样式
-    this.$nextTick(() => {
-      let textarea = this.$refs.textarea.$refs.textarea;
-      textarea.style.width = "500px";
-      textarea.style.height = "100px";
-      console.log(this.$refs);
-    });
+    let msgArr = [
+      "我素妓女",
+      "嘻嘻嘻",
+      "我觉得清者自清",
+      "不努力就去死",
+      "来到这条街，请不要叫我小姐",
+      "找不到从良的理由",
+      "天啦撸",
+      "啾咪惹",
+      "喝下恒河水\n我要解开我的庆典"
+    ];
 
-    this.$nextTick(() => {
-      this.scrollToBottom();
-    });
+    console.log(this.memberArr);
+
+    let [i, j] = [0, 0];
+
+    // 模拟消息产生
+    setTimeout(function createMsg() {
+      i++;
+      let now = new Date();
+      let user = self.memberArr[_.random(self.memberArr.length - 1)];
+
+      let content = self.$refs.content;
+      const { scrollTop, clientHeight, scrollHeight } = content;
+      console.log(scrollHeight - scrollTop - clientHeight);
+      let flag = false;
+      if (scrollHeight - scrollTop - clientHeight <= 10) {
+        flag = true;
+      } else {
+      }
+
+      self.chatContentArr.push(
+        new FakeMsg(
+          _.random(0, 10000, true),
+          user.id,
+          user.username,
+          msgArr[_.random(msgArr.length - 1)],
+          now
+        )
+      );
+
+      // self.renderContent();
+      self.$nextTick(() => {
+        self.$refs.canvas
+          .filter(canvas => !canvas.dataset.render) //过滤出未绘制的canvas
+          .forEach(canvas => {
+            // 绘制canvas
+            drawCheckMark(canvas);
+            // 给一起new出来的聊天气泡染色
+            let newChatContentContentDOM = canvas.nextSibling;
+            drawChatContentContent(newChatContentContentDOM);
+          });
+      });
+
+      self.$nextTick(() => flag && self.scrollToBottom());
+
+      if (i <= 2) {
+        setTimeout(createMsg, _.random(0.3, 4) * 1000);
+      }
+    }, self._.random(0.3, 4) * 1000);
+
+    // 模拟其他用户进入房间
+    setTimeout(function joinRoom() {
+      j++;
+      let user = {
+        id: _.random(5000, 10000),
+        username: `维尼熊`,
+        nickname: `维尼熊`
+      };
+
+      self.memberArr.push(user);
+
+      self.$notify({
+        title: "系统提示",
+        message: `${user.nickname}加入了房间`,
+        duration: 1000
+      });
+
+      setTimeout(() => {
+        // self.memberArr.splice(self.memberArr.length - 1, 1);
+        let user = self.memberArr.pop();
+        self.$notify({
+          title: "系统提示",
+          message: `${user.nickname}退出了房间`,
+          duration: 1000
+        });
+      }, _.random(1, 2) * 1000);
+
+      // self.renderContent();
+
+      if (j <= 2) {
+        timer2 = setTimeout(joinRoom, _.random(0.3, 4) * 1000);
+      }
+    }, self._.random(0.3, 4) * 1000);
+
+    window.onbeforeunload = function() {
+      let xhr = new XMLHttpRequest();
+      xhr.open("POST", "http://localhost:8080/api/exitRoom", false);
+      xhr.withCredentials = true;
+      xhr.send(null);
+    };
   },
 
-  destroyed() {
-    // alert(14);
+  async destroyed() {
+    // ---temp---
+
+    // ---temp---
+
+    window.onbeforeunload = null;
+
+    try {
+      const res = await this.exitAjax();
+      console.log(res);
+    } catch (err) {
+      console.log(err);
+
+      // 网络错误
+      this.$alert("网络或服务器错误", "Error");
+    }
   }
 });
 </script>
 
 <style lang="scss" scoped>
 .el-container {
+  .el-header {
+    .show-nickname {
+      margin-top: 20px;
+    }
+  }
   .el-main {
+    margin-top: 30px;
     padding-bottom: 100px;
     // 整体:宽高
     $wrapperWidth: 650px;
@@ -521,7 +768,6 @@ export default Vue.extend({
             padding: 10px 10px;
 
             margin-top: 10px;
-            // margin-left: 30px;
 
             border-radius: 5px;
 
@@ -531,7 +777,6 @@ export default Vue.extend({
             // 内容的最大宽度
             max-width: 80%;
 
-            // background-color: $otherContentBackgroundColor;
             font-size: 14px;
           }
           canvas {
@@ -542,7 +787,7 @@ export default Vue.extend({
           // 自己的对话框特有的样式（可以覆盖上面的）
           .self-content {
             float: right;
-
+            width: 100%;
             margin-right: 10px;
 
             // 为了实现自己的对话框整体在右边，名字部分采取文字靠右，内容部分采取右浮动。
@@ -557,7 +802,7 @@ export default Vue.extend({
             .chat-content-content {
               float: right;
 
-              //   background-color: $selfContentBackgroundColor;
+              // background-color: $selfContentBackgroundColor;
             }
 
             canvas {

@@ -44,6 +44,7 @@
             
             <el-row style="margin-top:10px;">
               <span>请选择房间<i class="el-icon-arrow-right"></i></span>
+              <el-button @click="createRoom" type="success" class="create-room-btn">创建房间</el-button>
               <hr class="hr-cloud" style="margin-top:30px;">
             </el-row>
 
@@ -148,6 +149,14 @@ export default Vue.extend({
       } catch (err) {
         this.$alert("进入房间失败，请稍后再试", "网络错误");
       }
+    },
+
+    // 创建房间
+    async createRoom(){
+      await 'ajax';
+      let room = {id:13,name:'创建的新房间',peopleNum:0};
+      this.roomArr.push(room);
+      this.enterRoom(room);
     }
   },
 
@@ -228,6 +237,13 @@ export default Vue.extend({
         content: "";
         display: block;
         clear: both;
+      }
+    }
+
+    .el-row {
+      .create-room-btn {
+        float: right;
+        margin-right: 30px;
       }
     }
 

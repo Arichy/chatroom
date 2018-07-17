@@ -6,8 +6,14 @@ import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 Vue.use(ElementUI);
 
-import axios from  '@/assets/http/http';
+// 设置拦截器后的axios
+import axios from '@/assets/http/http';
 Vue.prototype.$http = axios;
+
+import _ from 'lodash';
+Vue.prototype._ = _;
+
+import '@/assets/preset/preset.js';
 
 Vue.config.productionTip = false
 

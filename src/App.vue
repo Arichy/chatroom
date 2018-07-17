@@ -4,17 +4,6 @@
   </div>
 </template>
 
-<script>
-import '@/assets/preset/preset.js';
-
-export default {
-  watch:{
-    
-  }
-}
-</script>
-
-
 <style lang="scss">
 * {
   margin: 0;
