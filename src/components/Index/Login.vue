@@ -1,32 +1,51 @@
 <template>
     <el-form ref="form" :model="loginForm">
-        <el-form-item label="用户名" label-width="70px">
-            <el-input v-model="loginForm.username"></el-input>
-        </el-form-item>
-        <el-form-item label="密码" label-width="70px">
-            <el-input v-model="loginForm.password" type="password"></el-input>
-        </el-form-item>
+        <div class="wrapper">
+            <el-form-item label="用户名" label-width="70px">
+                <el-input v-model="loginForm.username"></el-input>
+            </el-form-item>
+            <el-form-item label="密码" label-width="70px">
+                <el-input v-model="loginForm.password" type="password"></el-input>
+            </el-form-item>
 
+            <el-alert :title="msg" v-show="showMsg" :closable="false" :type="type" class="text-center"></el-alert>
+        </div>
+    
         <el-form-item class="text-center">
             <el-button type="primary" @click="handleLogin">立即登陆</el-button>
         </el-form-item>
     </el-form>
 </template>
 
-<script lang="ts">
+<script>
 import Vue from "vue";
+import { vuser_pass as validate } from "@/assets/util/validate.js";
 
 export default Vue.extend({
   data() {
     return {
       loginForm: {
         username: "Arichy",
-        password: "xixixi"
-      }
+        password: "123"
+      },
+      msg: "",
+      type: "error",
+      showMsg: false
     };
   },
   methods: {
     async handleLogin() {
+      const { username, password } = this.loginForm;
+      const { msg, type } = validate(username, password);
+
+      if (type == "error") {
+        this.msg = msg;
+        this.type = type;
+        this.showMsg = true;
+
+        return false;
+      }
+
       try {
         const res = await this.$http.post(`/api/login`, {
           username: this.loginForm.username,
@@ -41,10 +60,12 @@ export default Vue.extend({
           // 跳转至showroom页面
           this.$router.push("showroom");
         } else {
-          this.$alert("用户名或密码错误", "登录失败");
+          this.showMsg = true;
+          this.msg = res.data.msg;
         }
       } catch (err) {
-        this.$alert("登录失败，请稍后再试", "登录失败");
+        this.showMsg = true;
+        this.msg = "登录失败，请稍后再试";
       }
     }
   },
@@ -60,9 +81,17 @@ export default Vue.extend({
 
 <style lang="scss" scoped>
 .el-form {
-  .el-form-item {
-    .el-input {
-      min-width: 200px;
+  .wrapper {
+    height: 170px;
+    .el-form-item {
+      .el-input {
+        min-width: 200px;
+      }
+    }
+    .el-alert {
+      width: 300px;
+      margin-left: 20%;
+      text-align: center;
     }
   }
 }

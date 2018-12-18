@@ -13,6 +13,10 @@ Vue.prototype.$http = axios;
 import _ from 'lodash';
 Vue.prototype._ = _;
 
+// 通过ws连接
+import VueSocketio from "vue-socket.io";
+Vue.use(VueSocketio, "http://localhost:8080");
+
 import '@/assets/preset/preset.js';
 
 Vue.config.productionTip = false

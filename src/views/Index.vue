@@ -10,8 +10,8 @@
       <!-- 注册、登陆切换按钮组 -->
       <el-row type="flex" justify="center">
         <el-button-group>
-          <router-link to="./reg"><el-button type="" >注册</el-button></router-link>
-          <router-link to="./login"><el-button type="" >登陆</el-button></router-link>
+          <router-link to="./reg"><el-button class="to-reg-btn">注册</el-button></router-link>
+          <router-link to="./login"><el-button class="to-login-btn" :autofocus="true">登陆</el-button></router-link>
         </el-button-group>
       </el-row>
       
@@ -33,16 +33,16 @@
 <script lang="ts">
 import Vue from "vue";
 // @ is an alias to /src
-import Footer from '@/components/Footer.vue';
+import Footer from "@/components/Footer.vue";
 
 export default Vue.extend({
   name: "home",
-  components:{
+  components: {
     Footer
   },
   data() {
     return {
-      title: 'Multiplayer Online Chatroom'
+      title: "Multiplayer Online Chatroom"
     };
   },
   methods: {}
@@ -51,12 +51,11 @@ export default Vue.extend({
 
 <style lang="scss" scoped>
 .el-container {
-
   .el-header {
     .el-row {
       margin-top: 14px;
 
-      h2.title{
+      h2.title {
         color: #555;
       }
     }
@@ -74,14 +73,29 @@ export default Vue.extend({
         margin-top: 100px;
       }
     }
+
+    .el-row {
+      .to-reg-btn {
+        border-right: none;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+      }
+      
+      .to-login-btn {
+        border-top-left-radius: 0px;
+        border-bottom-left-radius: 0px;
+      }
+    }
   }
 }
 
 // 过渡
-.toggle-enter-active,.toggle-leave-active {
+.toggle-enter-active,
+.toggle-leave-active {
   transition: opacity 250ms;
 }
-.toggle-enter,.toggle-leave-to {
+.toggle-enter,
+.toggle-leave-to {
   opacity: 0;
 }
 </style>
