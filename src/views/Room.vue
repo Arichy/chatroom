@@ -211,7 +211,7 @@ export default Vue.extend({
     return {
       room: {
         roomId: 130,
-        roomName: "周阴婷工作室"
+        roomName: "聊天室"
       },
       chatContentArr: [], // 聊天消息数组
       memberArr: [], // 此房间里的成员数组
@@ -501,26 +501,39 @@ export default Vue.extend({
     }
 
     let _ = self._;
+    // this.memberArr.push(
+    //   new FakeUser(0, "周阴婷"),
+    //   new FakeUser(2, "蔡依淋"),
+    //   new FakeUser(3, "罗玉凤"),
+    //   new FakeUser(4, "秦兴隆"),
+    //   new FakeUser(5, "9母"),
+    //   new FakeUser(6, "蕾姆"),
+    //   new FakeUser(7, "蔡英文")
+    // );
     this.memberArr.push(
-      new FakeUser(0, "周阴婷"),
-      new FakeUser(2, "蔡依淋"),
-      new FakeUser(3, "罗玉凤"),
-      new FakeUser(4, "秦兴隆"),
-      new FakeUser(5, "9母"),
-      new FakeUser(6, "蕾姆"),
-      new FakeUser(7, "蔡英文")
-    );
+      new FakeUser(0,"许嵩"),
+      new FakeUser(2,"五月天"),
+      new FakeUser(3,"邓紫棋"),
+      new FakeUser(4,"Taylor Swift"),
+    )
+
+    // let msgArr = [
+    //   "我素妓女",
+    //   "嘻嘻嘻",
+    //   "我觉得清者自清",
+    //   "不努力就去死",
+    //   "来到这条街，请不要叫我小姐",
+    //   "找不到从良的理由",
+    //   "天啦撸",
+    //   "啾咪惹",
+    //   "喝下恒河水\n我要解开我的庆典"
+    // ];
 
     let msgArr = [
-      "我素妓女",
-      "嘻嘻嘻",
-      "我觉得清者自清",
-      "不努力就去死",
-      "来到这条街，请不要叫我小姐",
-      "找不到从良的理由",
-      "天啦撸",
-      "啾咪惹",
-      "喝下恒河水\n我要解开我的庆典"
+      "你好",
+      "很高兴认识你",
+      "今晚吃什么?",
+      "大家晚安"
     ];
 
     console.log(this.memberArr);
@@ -567,7 +580,7 @@ export default Vue.extend({
 
       self.$nextTick(() => flag && self.scrollToBottom());
 
-      if (i <= 2) {
+      if (i <= 10) {
         setTimeout(createMsg, _.random(0.3, 4) * 1000);
       }
     }, self._.random(0.3, 4) * 1000);
@@ -577,8 +590,8 @@ export default Vue.extend({
       j++;
       let user = {
         id: _.random(5000, 10000),
-        username: `维尼熊`,
-        nickname: `维尼熊`
+        username: `小明`,
+        nickname: `小明`
       };
 
       self.memberArr.push(user);
