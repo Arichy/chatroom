@@ -502,13 +502,9 @@ export default Vue.extend({
 
     let _ = self._;
     // this.memberArr.push(
-    //   new FakeUser(0, "周阴婷"),
-    //   new FakeUser(2, "蔡依淋"),
-    //   new FakeUser(3, "罗玉凤"),
     //   new FakeUser(4, "秦兴隆"),
     //   new FakeUser(5, "9母"),
     //   new FakeUser(6, "蕾姆"),
-    //   new FakeUser(7, "蔡英文")
     // );
     this.memberArr.push(
       new FakeUser(0,"许嵩"),
@@ -518,12 +514,9 @@ export default Vue.extend({
     )
 
     // let msgArr = [
-    //   "我素妓女",
     //   "嘻嘻嘻",
     //   "我觉得清者自清",
     //   "不努力就去死",
-    //   "来到这条街，请不要叫我小姐",
-    //   "找不到从良的理由",
     //   "天啦撸",
     //   "啾咪惹",
     //   "喝下恒河水\n我要解开我的庆典"
@@ -557,7 +550,7 @@ export default Vue.extend({
 
       self.chatContentArr.push(
         new FakeMsg(
-          _.random(0, 10000, true),
+          _.random(0, 10000, true),``
           user.id,
           user.username,
           msgArr[_.random(msgArr.length - 1)],
