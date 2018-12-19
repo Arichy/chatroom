@@ -550,7 +550,7 @@ export default Vue.extend({
 
       self.chatContentArr.push(
         new FakeMsg(
-          _.random(0, 10000, true),``
+          _.random(0, 10000, true),``,
           user.id,
           user.username,
           msgArr[_.random(msgArr.length - 1)],
